@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "arangochair": "4.0.2",
+    "express": "4.14.1"
+  }
+}
