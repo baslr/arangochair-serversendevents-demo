@@ -1,23 +1,29 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <!-- Required meta tags -->
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <script src="js/d3.v4.js"></script>
 
-    <!-- Bootstrap CSS -->
-    <link rel="stylesheet" href="/css/bootstrap.min.css" integrity="sha384-rwoIResjU2yc3z8GV/NPeZWAv56rSmLldC3R/AZzGRnGxQQKnKkoFVhFQhNUwEyJ" crossorigin="anonymous">
-  </head>
+<head>
+  <!-- Required meta tags -->
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <script src="/js/d3.v4.js"></script>
+
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="/css/bootstrap.min.css" integrity="sha384-rwoIResjU2yc3z8GV/NPeZWAv56rSmLldC3R/AZzGRnGxQQKnKkoFVhFQhNUwEyJ"
+    crossorigin="anonymous">
+</head>
 
 
 <body>
-  <div class="container">
+  <div class="container" style="margin-top: 25px;">
     <div class="row">
       <div class="col-3">
       </div>
       <div class="col-6">
         <form>
+          <div class="input-group">
+            <span class="input-group-addon" id="tweetAs">Tweet as</span>
+            <input type="text" class="form-control" id="username" placeholder="Username" aria-describedby="tweetAs">
+          </div>
           <div class="input-group">
             <textarea class="form-control" id="exampleTextarea" rows="3" placeholder="To the world"></textarea>
             <span class="input-group-btn">
@@ -39,59 +45,62 @@
     </div>
   </div>
 
-<!--
+  <!--
 <div class="card">
   <div class="card-block">
     This is some text within a card block.
   </div>
 </div>
 -->
-<script>
-function sendTweet() {
-  const ta = document.querySelector('textarea');
-  const text = ta.value;
-  ta.value = '';
+  <script>
+    function sendTweet() {
+      const user = document.querySelector('INPUT#username').value;
+      const ta = document.querySelector('textarea');
+      const text = ta.value;
+      ta.value = '';
 
-  const postRequest = new Request('http://127.0.0.1:3000/tweet', {method: 'POST', body: JSON.stringify({tweet:text,time:Date.now()}), headers:{'content-type':'application/json'}});
-  fetch(postRequest);  
-}
+      const postRequest = new Request('http://127.0.0.1:3000/tweet', { method: 'POST', body: JSON.stringify({ tweet: text, time: Date.now(), user: user }), headers: { 'content-type': 'application/json' } });
+      fetch(postRequest);
+    }
 
-function updateTweets() {
-  const lis = cards.selectAll('DIV.card').data(Array.from(tweets.values()));
-  // lis.text(d => d.tweet);
-  const cblock = lis.enter().insert('DIV', ':first-child').attr('class', 'card')
-    .append('DIV').attr('class', 'card-block');
-  
-  cblock.insert('h6').attr('class', 'card-subtitle mb-2 text-muted').text(d => formatTime(d.time));
-  cblock.insert('P').attr('class', 'card-text').text( d => d.tweet)
-  .exit().remove();
-}
+    function updateTweets() {
+      const lis = cards.selectAll('DIV.card').data(Array.from(tweets.values()));
+      // lis.text(d => d.tweet);
+      const cblock = lis.enter().insert('DIV', ':first-child').attr('class', 'card')
+        .append('DIV').attr('class', 'card-block');
 
-const tweets = new Map();
-const cards = d3.select('DIV#cards');
-const formatTime = d3.timeFormat("%B %d, %Y %H:%M");
+      cblock.insert('h6').attr('class', 'card-subtitle mb-2 text-muted').text(d => d.user + ' - ' + formatTime(d.time));
+      cblock.insert('P').attr('class', 'card-text').text(d => d.tweet)
+        .exit().remove();
+    }
+
+    const tweets = new Map();
+    const cards = d3.select('DIV#cards');
+    const formatTime = d3.timeFormat("%B %d, %Y %H:%M");
 
 
 
-const evtSource = new EventSource('/sse');
+    const evtSource = new EventSource('/sse');
 
-evtSource.onmessage = function(e) {
-  console.log(e);
-};
+    evtSource.onmessage = function (e) {
+      console.log(e);
+    };
 
-evtSource.addEventListener('delete', (e) => {  
-  console.log('document deleted');
-  const obj = JSON.parse(e.data);
-  console.log(obj);
-}, false);
+    evtSource.addEventListener('delete', (e) => {
+      console.log('document deleted');
+      const obj = JSON.parse(e.data);
+      console.log(obj);
+    }, false);
 
-evtSource.addEventListener('insert/update', (e) => {  
-  console.log('document insert/update');
-  const obj = JSON.parse(e.data);
-  console.log(obj);
-  tweets.set(obj._key, obj);
-  updateTweets();
-}, false);
-</script>
+    evtSource.addEventListener('insert/update', (e) => {
+      console.log('document insert/update');
+      const obj = JSON.parse(e.data);
+      console.log(obj);
+      tweets.set(obj._key, obj);
+      updateTweets();
+    }, false);
+
+  </script>
 </body>
+
 </html>
