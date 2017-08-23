@@ -7,7 +7,7 @@ Go to the web ui and add a collection `tweets`.
 ArangoDB is ready and we install the demo:
 
     git clone https://github.com/baslr/arangochair-serversendevents-demo
-    cd serversendevents
+    cd arangochair-serversendevents-demo
     npm install
     node index.js
 
